@@ -1,0 +1,35 @@
+*************ITRS 2011 aligned PTM-MG FinFET models (for Public Release)***********
+* PTM-MG FET Models ITRS Version 2.0 
+* NOTES:
+* This is the beta version of the ITRS 2011 aligned MG (multi-gate) models.
+* The parameters are based on BSIM-CMG 105.03 models for bulk FinFET devices.
+* Parameters are set from ITRS 2011 PIDS tables.
+* LSTP nodes in the models target Ioff=0.1 nA/um where Weff=2*fin_height+fin_width.
+* HP nodes in the models target Ioff=100 nA/um.
+
+* Transistor calls can be made as follows:
+* The param.inc file contains variables to calculate Effective Width and provide
+* nominal supply voltage. The included variables are:
+* vdd = supply voltage
+* fin_height = Height of the Fin (HFIN)
+* fin_width = Thickness of the Fin (TFIN)
+* lg = Gate Length
+***********************************************************************************
+*.LIB ptm14hp
+simulator lang = spice
+
+.subckt nfet d g s x l=lg nfin=1
+.include '~/WA/FinFET/modelfiles/14nfet.pm'
+mnfet d g s x nfet L=l NFIN=nfin
+.ends nfet
+
+.subckt pfet d g s x l=lg nfin=1
+.include '~/WA/FinFET/modelfiles/14pfet.pm'
+mpfet d g s x pfet L=l NFIN=nfin
+.ends pfet
+
+.lib '~/WA/FinFET/modelfiles/param.inc' 14nm
+
+*.ENDL ptm14hp
+
+***********************************************************************************
