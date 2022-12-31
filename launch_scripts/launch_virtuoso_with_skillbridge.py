@@ -32,7 +32,8 @@ def main(args):
     print(f'Using {sb_path} as skillbridge path\n')
     
     python_path = str(subprocess.run(['which', 'python'], capture_output=True).stdout)[2:-3]
-
+    python_lib_path = python_path[0:python_path.find('/bin')] + '/lib/python3.10/site-packages/'
+    print(python_lib_path)
     if 'Virtuosopy/launch_scripts' not in os.path.abspath(os.curdir):
         print('Error: Please launch this script from launch_scripts folder (cd ./launch_scripts)')
         exit()

@@ -16,17 +16,21 @@ See Examples directory or **Usage** section below for more information.
 1. Disable activation of conda at startup
 
         conda config --set auto_activate_base false
+
 1. Restart shell
 
 1. Create a virtual environment 
         
         conda create -n vp_env
-1. Activate the virtual environment 
 
-        conda activate vp_env
-1. Install skillbridge and other packages
+1. Activate the virtual environment called 'vp_env' and install python
 
-        conda install skillbridge dataclasses ipympl jupyter regex
+        conda activate vp_env python
+
+1. Install Virtuosopy
+
+        cd src
+        pip install --editable .
 
 1. Start Virtuoso (in VNC session terminal) (Note: troubleshooting below)
         
