@@ -30,6 +30,7 @@ class Schematic:
         self.wires = []
         self.voltage_sources = []
         self.verbose = verbose
+        self.param_vars = []
 
     def create_instance(self, lib_name, cell_name, pos, name, rot='R0', conn_name=None):
         """
@@ -43,7 +44,10 @@ class Schematic:
         inst: _Inst = None # type: ignore
 
         if isinstance(pos[0], list):
-            inst = _Inst(self.ws, self.cv, lib_name, cell_name, conn_pos(pos[0][0], pos[1]), name, rot)
+            pos = list(pos)
+            if len(pos) == 2:
+                pos.append(10)
+            inst = _Inst(self.ws, self.cv, lib_name, cell_name, conn_pos(pos[0][0], pos[1], pos[2]), name, rot)
             self.create_wire('route', [pos[0][0], inst.pins[pos[0][1]]], label=conn_name)
         elif len(pos) == 2:
             inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos, name, rot)
@@ -51,6 +55,7 @@ class Schematic:
             print('Pos parameter must be:')
             print('\tan xy coordinate represented by an array of length 2')
             print('\ta tuple with the pin connections and direction')
+            print("\t eg. ([nmos.pins.S, 'PLUS'], 'below')")
             return inst
 
         self.instances.append(inst)
@@ -134,7 +139,7 @@ class Schematic:
     def create_pin(self, name, direction, pos, rot='R0'):
         if isinstance(pos, tuple):
             pin_pos = conn_pos(*pos)
-            self.create_wire('route', [pos[0], pin_pos], name)
+            self.create_wire('route', [pos[0], pin_pos])
             if direction == 'wire':
                 return
             pos = pin_pos
@@ -158,6 +163,9 @@ class Schematic:
 
         return p_id
 
+    def add_param_vars(self, vars):
+        self.param_vars += vars
+
     def redraw(self):
         self.ws.hi.redraw()
 
@@ -174,7 +182,7 @@ class Schematic:
         # let the user know if that happens:
         for i in self.instances:
             for a_p_name, a_p_value in i.applied_params.items():
-                if a_p_value == '':
+                if a_p_value == '' or a_p_value in self.param_vars:
                     break
                 
                 calc_val = i.params[a_p_name].value
