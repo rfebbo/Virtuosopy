@@ -136,7 +136,6 @@ def convert_str_to_num(string):
     # look for a number with or without a decimal 
     # followed by 0 or more numbers then a lower case or upper case letter
     res = re.findall('(\d+\.?\d*)([a-z]|[A-Z])', string)
-
     num = 0
     if len(res) > 0:
         n = float(res[0][0])
@@ -164,7 +163,7 @@ def convert_str_to_num(string):
         else:
             return float(string)
     else:
-        return string
+        raise(Exception(f'Could not convert {string} into a number'))
     
     return num
 
