@@ -1,6 +1,9 @@
 # aided by: https://iamanintrovert.github.io/notes/Running-Spectre-Simulation-from-python/
 # aided by: https://github.com/unihd-cag/skillbridge/blob/master/docs/examples/custom_functions.rst
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['axes.formatter.useoffset'] = False
+
 from matplotlib.lines import Line2D
 import matplotlib.colors as mcolors
 from .Instance import _Pin
@@ -47,7 +50,7 @@ class Simulator:
             self.sch.ws['modelFile'](*model_files)
 
         if errpreset is None:
-            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration)
+            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', 'moderate')
         elif errpreset == 'liberal' or errpreset == 'conservative' or errpreset == 'moderate':
             self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', errpreset)
         else:
@@ -485,7 +488,9 @@ class Simulator:
         if interactive:
             plt.ion()
 
-        self.fig, ax = plt.subplots(len(self.cust_data_types), figsize=(13, 10), sharex=True)
+        self.fig, _ = plt.subplots(len(self.cust_data_types), figsize=(13, 10), sharex=True)
+
+        ax = self.fig.axes
 
         # y labels for voltage, current, and custom
         y_labels = self.cust_data_types
