@@ -176,6 +176,8 @@ def conn_pos(from_pin, direction, offset=10):
         return from_pin.pos - [offset, 0.]
     elif direction == 'right':
         return from_pin.pos + [offset, 0.]
+    elif direction == 'upright':
+        return from_pin.pos + [offset, offset]
 
 
 def rv_condition(function_pointer : str, rv: str) -> bool:

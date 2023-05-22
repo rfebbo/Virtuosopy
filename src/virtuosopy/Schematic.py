@@ -26,11 +26,12 @@ class Schematic:
         self.cv = cv
         self.lib_name = lib_name
         self.cell_name = cell_name
-        self.instances = []
+        self.instances = {}
         self.wires = []
         self.voltage_sources = []
         self.verbose = verbose
         self.param_vars = []
+        self.pin_nets = []
 
     def create_instance(self, lib_name, cell_name, pos, name, rot='R0', conn_name=None):
         """
@@ -58,7 +59,7 @@ class Schematic:
             print("\t eg. ([nmos.pins.S, 'PLUS'], 'below')")
             return inst
 
-        self.instances.append(inst)
+        self.instances[name] = inst
         return inst
 
     def create_wire(self, mode, positions, label=None, label_offset=None):
@@ -139,6 +140,7 @@ class Schematic:
     def create_pin(self, name, direction, pos, rot='R0'):
         if isinstance(pos, tuple):
             pin_pos = conn_pos(*pos)
+            pos[0].netname = name
             self.create_wire('route', [pos[0], pin_pos])
             if direction == 'wire':
                 return
@@ -161,6 +163,8 @@ class Schematic:
         p_id = self.ws.sch.create_pin(self.cv, inputCVId, name, direction,
                                       None, list(pos), rot)
 
+        if name not in self.pin_nets:
+            self.pin_nets.append(name)
         return p_id
 
     def add_param_vars(self, vars):
@@ -180,7 +184,7 @@ class Schematic:
         # CDF callbacks use the user applied parameters to calculate the actual parameters
         # Sometimes user applied parameters don't stick
         # let the user know if that happens:
-        for i in self.instances:
+        for _, i in self.instances.items():
             for a_p_name, a_p_value in i.applied_params.items():
                 if a_p_value == '' or a_p_value in self.param_vars:
                     break

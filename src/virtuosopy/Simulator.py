@@ -27,13 +27,11 @@ class Simulator:
      -retieves data from Virtuoso in a readable format\n
      -plotting\n
     '''
-    def __init__(self, duration, sch, model_files = None, view='schematic', show_netlist = False, verbose=True, errpreset=None):
+    def __init__(self, sch, model_files = None, view='schematic', show_netlist = False, verbose=True, errpreset=None):
         self.sch = sch
-        if isinstance(duration, str):
-            duration = convert_str_to_num(duration)
-
-        self.duration = duration
         self.verbose = verbose
+
+        self.errpreset = errpreset
 
         # set simulator
         self.sch.ws['simulator'](Symbol('spectre'))
@@ -49,12 +47,6 @@ class Simulator:
             model_files = [os.path.abspath(m) for m in model_files]
             self.sch.ws['modelFile'](*model_files)
 
-        if errpreset is None:
-            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', 'moderate')
-        elif errpreset == 'liberal' or errpreset == 'conservative' or errpreset == 'moderate':
-            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', errpreset)
-        else:
-            raise Exception(f'Invalid errpreset: {errpreset}')
 
         # analysis order in case of multiple analysis
         self.sch.ws['envOption'](Symbol('analysisOrder'), ['tran'])
@@ -82,6 +74,20 @@ class Simulator:
 
         # paramter analysis sets
         self.param_sets = None
+
+    def tran(self, duration):
+        if isinstance(duration, str):
+            duration = convert_str_to_num(duration)
+
+        self.duration = duration
+
+        if self.errpreset is None:
+            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', 'moderate')
+        elif self.errpreset == 'liberal' or self.errpreset == 'conservative' or self.errpreset == 'moderate':
+            self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', self.errpreset)
+        else:
+            raise Exception(f'Invalid errpreset: {self.errpreset}')
+
 
 
 # stimulus file example:
@@ -171,6 +177,9 @@ class Simulator:
                 self.waves[pinfname]['type'] = signal_type
                 self.waves[pinfname]['no plot'] = True
             pin_fns.append(pinfname)
+
+        if name in self.custom_wave_names:
+            raise Exception(f'{name} is already a custom wave name.')
 
         self.custom_wave_names.append(name)
         self.waves[name] = {}
@@ -477,7 +486,7 @@ class Simulator:
                 for l in f:
                     if 'error' in l.lower() or 'warning' in l.lower():
                         print('\t' + l)
-            return
+            # return
 
         self.ax_info = {}
         linestyles = ['solid', 'dashed', 'dashdot', 'dotted']

@@ -10,10 +10,11 @@ class _Params:
         self.ws = inst.ws
         self.names = []
         params = inst.ws.cdf.get_inst_CDF(inst.inst).parameters
-        for x in params:
-            param_name = x.name.replace("?", "")
-            self.names.append(param_name)
-            setattr(self, param_name, x)
+        if params is not None:
+            for x in params:
+                param_name = x.name.replace("?", "")
+                self.names.append(param_name)
+                setattr(self, param_name, x)
 
     def __setitem__(self, key, value):
         getattr(self, key).value = value
@@ -25,7 +26,14 @@ class _Params:
         return internal_iter(self, self.names)
 
 
-_Pin = namedtuple("Pin", "fname name pos x y")
+class _Pin:
+    def __init__(self, fname, name, pos , x, y, netname):
+        self.fname = fname
+        self.name = name
+        self.pos = pos
+        self.x = x
+        self.y = y
+        self.netname = netname
 
 # Pin = namedtuple('Pin', 'x y')
 
@@ -57,7 +65,7 @@ class _Pins:
             # transform out of virtuoso coords
             pos = i_transform(pos)
             full_name = f"/{inst.name}/{x['name']}"
-            p = _Pin(full_name, x["name"], pos, pos[0], pos[1])
+            p = _Pin(full_name, x["name"], pos, pos[0], pos[1], None)
             # p = Pin(pos[0], pos[1])
             setattr(self, x["name"], p)
 
