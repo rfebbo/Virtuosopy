@@ -1,5 +1,5 @@
 launch_scripts/skill_launch_files
-Examples/sim_output
+**/sim_output
 *.pyc
 src/Virtuosopy.egg-info
 .vscode
