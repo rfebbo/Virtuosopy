@@ -16,6 +16,7 @@ pos_table['cmos10lpe']['pfet'] = [-0.25/snap_spacing, 0.]
 pos_table['analogLib'] = {}
 pos_table['analogLib']['pmos4'] = [-0.25/snap_spacing, 0.]
 pos_table['analogLib']['nmos4'] = [-0.25/snap_spacing, 0.]
+pos_table['analogLib']['res'] = [0., 3.]
 
 def print_info(instance):
     has_prop = False

@@ -85,9 +85,11 @@ class _Inst:
         
         self.pos = np.asarray(pos)
         if lib_name in pos_table and cell_name in pos_table[lib_name]:
-            self.pos += pos_table[lib_name][cell_name]
+            # self.pos += pos_table[lib_name][cell_name]
 
-        self.vpos = transform(pos)
+            self.vpos = transform(self.pos+pos_table[lib_name][cell_name])
+        else:
+            self.vpos = transform(self.pos)
 
         if rot[0] != 'M':
             self.mirrored = False
