@@ -163,21 +163,37 @@ def convert_str_to_num(string):
         else:
             return float(string)
     else:
-        raise(Exception(f'Could not convert {string} into a number'))
+        return string
+        # raise(Exception(f'Could not convert {string} into a number'))
     
     return num
 
-def conn_pos(from_pin, direction, offset=10):
-    if direction in ['above', 'up']:
-        return from_pin.pos + [0., offset]
-    elif direction in ['below', 'down']:
-        return from_pin.pos - [0., offset]
-    elif direction == 'left':
-        return from_pin.pos - [offset, 0.]
-    elif direction == 'right':
-        return from_pin.pos + [offset, 0.]
-    elif direction == 'upright':
-        return from_pin.pos + [offset, offset]
+# ([pin of other instance, pin_name], direction)
+class ConnPos:
+    def __init__(self, external_pin, internal_pin, direction, offset=10, net_name=None, add_pin=False):
+        self.external_pin = external_pin
+        self.internal_pin = internal_pin
+        self.direction = direction
+        self.net_name = net_name
+        self.add_pin = True
+
+        if self.direction in ['above', 'up']:
+            self.pos1 = external_pin.pos + [0., offset]
+            self.label_offset = [0., offset/2]
+        elif self.direction in ['below', 'down']:
+            self.pos1 =  external_pin.pos - [0., offset]
+            self.label_offset =  [0., offset/2]
+        elif self.direction == 'left':
+            self.pos1 =  external_pin.pos - [offset, 0.]
+            self.label_offset =  [offset/2, 0.]
+        elif self.direction == 'right':
+            self.pos1 =  external_pin.pos + [offset, 0.]
+            self.label_offset =  [offset/2, 0.]
+        elif self.direction == 'upright':
+            self.pos1 =  external_pin.pos + [offset, offset]
+            self.label_offset =  [offset/2, offset/2]
+
+
 
 
 def rv_condition(function_pointer : str, rv: str) -> bool:

@@ -23,7 +23,7 @@ class Simulator:
     '''
     Simulator Class Performs:
      -transient simulations\n
-     -performs custom funcitons on waves\n
+     -custom funcitons on waves\n
      -retieves data from Virtuoso in a readable format\n
      -plotting\n
     '''
@@ -497,7 +497,7 @@ class Simulator:
         if interactive:
             plt.ion()
 
-        self.fig, _ = plt.subplots(len(self.cust_data_types), figsize=(13, 10), sharex=True)
+        self.fig, _ = plt.subplots(len(self.cust_data_types), figsize=(8, 3*len(self.cust_data_types)), sharex=True)
 
         ax = self.fig.axes
 

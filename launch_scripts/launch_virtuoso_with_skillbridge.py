@@ -8,6 +8,7 @@ def main(args):
     if len(args) == 0:
         n_virtuosos_gui = 1
         n_virtuosos_hidden = 0
+        project_dir = 'neuropipe/suny10lpe'
     elif len(args) == 2:
         n_virtuosos_gui = int(args[0])
         n_virtuosos_hidden = int(args[1])
@@ -36,17 +37,17 @@ def main(args):
 
     for tid in range(n_virtuosos):
         
-        
-        with open(f'./skill_launch_files/start{tid}.il', 'w') as f:
+        skill_filename = f'/home/{netid}/cadence/Virtuosopy/launch_scripts/skill_launch_files/start{tid}.il'
+        with open(skill_filename, 'w') as f:
             f.write(f'load({sb_path})\n')
             f.write(f'pyStartServer ?id "{netid}_{tid}" ?python "LD_LIBRARY_PATH= {python_path}"\n')
-            f.write('load("../suny10lpe_libs/Generators/CCSinvokeCdfCallbacks.il")\n')
+            f.write('load("~/cadence/Virtuosopy/launch_scripts/CCSinvokeCdfCallbacks.il")\n')
 
         if n_virtuosos_gui > 0:
-            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/neuropipe/suny10lpe; source toolsenv; virtuoso -restore ../suny10lpe_libs/Generators/skill_launch_files/start{tid}.il"', shell=True)
+            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/{project_dir}; source toolsenv; virtuoso -restore {skill_filename}"', shell=True)
             n_virtuosos_gui -= 1
         elif n_virtuosos_hidden > 0:
-            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/neuropipe/suny10lpe; source toolsenv; virtuoso -restore -nograph ../suny10lpe_libs/Generators/skill_launch_files/start{tid}.il"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/{project_dir}; source toolsenv; virtuoso -restore -nograph {skill_filename}"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             n_virtuosos_hidden -= 1
 
         print(f'launched virtuoso with skillbridge with a workspace id: {netid}_{tid}')

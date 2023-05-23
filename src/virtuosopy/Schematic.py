@@ -33,7 +33,7 @@ class Schematic:
         self.param_vars = []
         self.pin_nets = []
 
-    def create_instance(self, lib_name, cell_name, pos, name, rot='R0', conn_name=None):
+    def create_instance(self, lib_name, cell_name, pos, name, rot='R0'):
         """
         Instantiate a component in the schematic
 
@@ -41,28 +41,33 @@ class Schematic:
         ----------
         lib_name : string
             library for the component (eg. 'analoglib')
+        cell_name : string
+            cell name for the component (eg. 'nmos4')
+        pos : [float, float] or ConnPos
+            position of the component (eg. [0., 0.] or ConnPos(nmos.pins.D, 'MINUS', 'above') )
+        name : string
+            instance name for the component (eg. 'MN1')
+        rot : string
+            rotation (eg. 'R90')
         """
         inst: _Inst = None # type: ignore
 
-        if isinstance(pos[0], list):
-            pos = list(pos)
-            if len(pos) == 2:
-                pos.append(10)
-            inst = _Inst(self.ws, self.cv, lib_name, cell_name, conn_pos(pos[0][0], pos[1], pos[2]), name, rot)
-            self.create_wire('route', [pos[0][0], inst.pins[pos[0][1]]], label=conn_name)
-        elif len(pos) == 2:
+        if isinstance(pos, ConnPos):
+            inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos.pos1, name, rot)
+            self.create_wire([pos.external_pin, inst.pins[pos.internal_pin]], label=pos.net_name, label_offset=pos.label_offset)
+        elif isinstance(pos, list) and len(pos) == 2:
             inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos, name, rot)
         else:
             print('Pos parameter must be:')
             print('\tan xy coordinate represented by an array of length 2')
-            print('\ta tuple with the pin connections and direction')
-            print("\t eg. ([nmos.pins.S, 'PLUS'], 'below')")
+            print('\ta ConnPos')
+            print("\t (eg. [0., 0.] or ConnPos(nmos.pins.D, 'MINUS', 'above') )")
             return inst
 
         self.instances[name] = inst
         return inst
 
-    def create_wire(self, mode, positions, label=None, label_offset=None):
+    def create_wire(self, positions, label=None, label_offset=None, mode='route'):
 
         # transform into virtuoso coords
         pos = []
@@ -116,14 +121,12 @@ class Schematic:
         
 
         self.create_wire(
-            "route",
             [V_src.pins.PLUS, [V_src.pins.PLUS.x, V_src.pins.PLUS.y + 4.0]],
             p_name,
             [1.0, 3.0],
         )
 
         self.create_wire(
-            "route",
             [V_src.pins.MINUS, [V_src.pins.MINUS.x, V_src.pins.MINUS.y - 4.0]],
             n_name,
             [1.0, -1.5],
@@ -138,10 +141,10 @@ class Schematic:
                                       "R0", "fixed", size, "normalLabel")
 
     def create_pin(self, name, direction, pos, rot='R0'):
-        if isinstance(pos, tuple):
-            pin_pos = conn_pos(*pos)
-            pos[0].netname = name
-            self.create_wire('route', [pos[0], pin_pos])
+        if isinstance(pos, ConnPos):
+            pin_pos = pos.pos1
+            pos.external_pin.netname = name
+            self.create_wire([pos.external_pin, pin_pos], label=pos.net_name, label_offset=pos.label_offset)
             if direction == 'wire':
                 return
             pos = pin_pos

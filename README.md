@@ -29,6 +29,9 @@ See Examples directory or **Usage** section below for more information.
 
 1. Install Virtuosopy
 
+        cd ~
+        cd cadence
+        git clone <git_url>
         cd src
         pip install --editable .
 
@@ -86,7 +89,7 @@ print(nfet)
 
 ```python
 # connect the body to the source
-sch.create_wire('route', [nmos.pins.S, nmos.pins.B], 'B')
+sch.create_wire([nmos.pins.S, nmos.pins.B], 'B')
 ```
 
 **4. Quick Instance Placement**
