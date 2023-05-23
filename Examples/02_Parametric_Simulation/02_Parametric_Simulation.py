@@ -2,7 +2,7 @@ import virtuosopy as vp
 
 # This creates (or overwrites if it exists) a schematic called example_circuit under the vp_demonstration library
 # If overwrite=True is not there and you try to create an instance that already exists you will get an error.
-sch = vp.Schematic('vp_demonstration', 'example_circuit', overwrite=True)
+sch = vp.Schematic('vp_demonstration', 'parametric_simulation', overwrite=True)
 
 # create a nmos and print its details
 nmos = sch.create_instance('analogLib', 'nmos4', [0.,0.], 'nmos')
