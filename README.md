@@ -9,10 +9,10 @@ See Examples directory or **Usage** section below for more information.
 
         cd ~/Downloads
         wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
-        chmod +x ./Anaconda3-2022.05-Linux-x86_64.sh
-        ./Anaconda3-2022.05-Linux-x86_64.sh
+        chmod +x ./Anaconda3-2022.10-Linux-x86_64.sh
+        ./Anaconda3-2022.10-Linux-x86_64.sh
 
-1. Restart shell
+1. Restart terminal
 1. Disable activation of conda at startup
 
         conda config --set auto_activate_base false
@@ -25,13 +25,15 @@ See Examples directory or **Usage** section below for more information.
 
 1. Activate the virtual environment called 'vp_env' and install python
 
-        conda activate vp_env python
+        conda activate vp_env
+        conda install python
 
-1. Install Virtuosopy
+1. Install Virtuosopy (must have cadence virtuoso setup)
 
         cd ~
         cd cadence
         git clone <git_url>
+        cd Virtuosopy
         cd src
         pip install --editable .
 
