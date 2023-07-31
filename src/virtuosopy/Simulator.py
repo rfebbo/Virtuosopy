@@ -27,11 +27,10 @@ class Simulator:
      -retieves data from Virtuoso in a readable format\n
      -plotting\n
     '''
-    def __init__(self, sch, model_files = None, view='schematic', show_netlist = False, verbose=True, errpreset=None):
+    def __init__(self, sch, model_files = None, view='schematic', show_netlist = False, verbose=True):
         self.sch = sch
         self.verbose = verbose
 
-        self.errpreset = errpreset
 
         # set simulator
         self.sch.ws['simulator'](Symbol('spectre'))
@@ -75,11 +74,13 @@ class Simulator:
         # paramter analysis sets
         self.param_sets = None
 
-    def tran(self, duration):
+    def tran(self, duration, errpreset=None):
         if isinstance(duration, str):
             duration = convert_str_to_num(duration)
 
         self.duration = duration
+
+        self.errpreset = errpreset
 
         if self.errpreset is None:
             self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', 'moderate')
@@ -104,6 +105,8 @@ class Simulator:
     def apply_stims(self, stims):
         stim_filename = os.getcwd() + f'/sim_output/{self.sch.cell_name}/graphical_stimuli.scs'
 
+        stim_types = ['bit', 'pwl', 'dc']
+
         with open(stim_filename, 'w') as f:
             for name, s in stims.items():
                 
@@ -117,6 +120,8 @@ class Simulator:
                     f.write(f"""_v{name} ({name} 0) vsource wave=\\[ {s['wave']} \\] type=pwl\n""")
                 elif s['type'] == 'dc':
                     f.write(f"""_v{name} ({name} 0) vsource dc={s['voltage']} type=dc\n""")
+                else:
+                    print(f"Unknown stim type '{s['type']}'. Please use one of: \n\t{stim_types}")
 
         self.sch.ws['stimulusFile'](stim_filename)
 

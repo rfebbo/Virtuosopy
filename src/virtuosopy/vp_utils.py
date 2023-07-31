@@ -10,6 +10,8 @@ pos_table = {}
 pos_table['cmos10lpe'] = {}
 pos_table['cmos10lpe']['dgxnfet'] = [-0.25/snap_spacing, 0.]
 pos_table['cmos10lpe']['dgxpfet'] = [-0.25/snap_spacing, 0.]
+pos_table['cmos10lpe']['dgpfet'] = [-0.25/snap_spacing, 0.]
+pos_table['cmos10lpe']['dgnfet'] = [-0.25/snap_spacing, 0.]
 pos_table['cmos10lpe']['nfet'] = [-0.25/snap_spacing, 0.]
 pos_table['cmos10lpe']['pfet'] = [-0.25/snap_spacing, 0.]
 
@@ -162,7 +164,11 @@ def convert_str_to_num(string):
         elif ext == 'T':
             num = n * 1e12
         else:
-            return float(string)
+            try:
+                return float(string)
+            except:
+                print(f"Could not convert {string} to float. If this parameter is not an SI unit, ignore this error")
+                return string
     else:
         return string
         # raise(Exception(f'Could not convert {string} into a number'))
@@ -236,3 +242,28 @@ def search_sb(search_string: str, ws, path: str, condition:Callable[[str, str], 
         p = path + f'.{fn}'
         if p.count('.') < max_depth:
             search_sb(search_string, function_pointer, p, condition=condition, max_depth=max_depth)
+
+
+def props_to_layout(props):
+    new_props = props.copy()
+    for dev in props:
+        new_props[dev] = {}
+        new_props[dev]['l'] = convert_str_to_num(props[dev]['l'])
+        new_props[dev]['wt'] = convert_str_to_num(props[dev]['wt'])
+        new_props[dev]['wf'] = new_props[dev]['wt']/props[dev]['nf']
+        new_props[dev]['nf'] = props[dev]['nf']
+
+        new_props[dev]['l'] *= 1e6
+        new_props[dev]['wt'] *= 1e6
+        new_props[dev]['wf'] *= 1e6
+    return new_props
+
+def convert_props_to_param(props):
+
+    param = []
+    param.append(['l', 'float', props['l']*1e-6])
+    param.append(['w', 'float', (props['wt']/props['nf'])*1e-6])
+    param.append(['nf', 'integer', props['nf']])
+    param.append(['wf', 'float', (props['wt']/props['nf'])*1e-6])
+
+    return param

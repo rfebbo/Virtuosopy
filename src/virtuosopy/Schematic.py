@@ -31,6 +31,7 @@ class Schematic:
         self.voltage_sources = []
         self.verbose = verbose
         self.param_vars = []
+        self.cdf_ignore = []
         self.pin_nets = []
 
     def create_instance(self, lib_name, cell_name, pos, name, rot='R0'):
@@ -173,6 +174,9 @@ class Schematic:
     def add_param_vars(self, vars):
         self.param_vars += vars
 
+    def add_cdf_ignore(self, vars):
+        self.cdf_ignore += vars
+
     def redraw(self):
         self.ws.hi.redraw()
 
@@ -189,7 +193,7 @@ class Schematic:
         # let the user know if that happens:
         for _, i in self.instances.items():
             for a_p_name, a_p_value in i.applied_params.items():
-                if a_p_value == '' or a_p_value in self.param_vars:
+                if a_p_value == '' or a_p_value in self.param_vars or a_p_value in self.cdf_ignore:
                     break
                 
                 calc_val = i.params[a_p_name].value
