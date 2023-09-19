@@ -17,7 +17,7 @@ See Examples directory or **Usage** section below for more information.
 
         conda config --set auto_activate_base false
 
-1. Restart shell
+1. Restart terminal
 
 1. Create a virtual environment 
         
@@ -32,7 +32,7 @@ See Examples directory or **Usage** section below for more information.
 
         cd ~
         cd cadence
-        git clone <git_url>
+        git clone https://github.com/rfebbo/Virtuosopy.git
         cd Virtuosopy
         cd src
         pip install --editable .
@@ -122,6 +122,10 @@ sch.save()
 
 ### **Running a Spectre Simulation**
 
+
+
+![Parametric Simulation Example](./Examples/02_Parametric_Simulation/images/sim_waves.png)
+
 #### See examples
 
 ## **Advanced Launch Options**
@@ -142,17 +146,17 @@ If you launch multiple sessions, then when you are opening a schematic you need 
 
         skillbridge path
 
-1. type the load command shown from last step into Virtuoso CIW command window
+1. type the load command shown from the output of the last step into Virtuoso CIW command window
 
-1. launch skillbridge where netid is your netid, python_path is the result of the shell command 'which python':
+1. Again in the Virtuoso CIW command window, launch skillbridge where netid is your netid, python_path is the result of the shell command 'which python':
 
         pyStartServer ?id "netid_0" ?python "LD_LIBRARY_PATH= {python_path}
 
-1. copy cdf callback script to virtuoso directory
+1. In regular terminal, copy cdf callback script to virtuoso directory
 
         cp ./launch_scripts/CCSinvokeCdfCallbacks.il <virtuoso_directory>
 
-1. load cdf callback script:
+1. Back in Virtuoso CIW command window, load cdf callback script:
 
         load("./CCSinvokeCdfCallbacks.il")
 

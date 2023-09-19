@@ -152,7 +152,7 @@ class _Inst:
             repr += ", "
         repr += "\n"
 
-        repr += "Applied Paramters: \n"
+        repr += "Applied Parameters: \n"
         for p in self.applied_params:
             repr += "\t"
             repr += p

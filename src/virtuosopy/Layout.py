@@ -60,6 +60,7 @@ class Layout:
             cut_spacing = 0.14
         elif layers in ['VM4_BA']:
             params.append(['cutSpacing', [0.25, 0.25]])
+            params.append(['layer1Enc', [0.1,0.1,0.1,0.1]])
             cut_spacing = 0.25
         else:
             params.append(['cutSpacing', [0.11, 0.11]])
