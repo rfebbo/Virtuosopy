@@ -5,10 +5,10 @@ import sys
 import re
 
 def main(args):
+    project_dir = 'neuropipe/suny10lpe'
     if len(args) == 0:
         n_virtuosos_gui = 1
         n_virtuosos_hidden = 0
-        project_dir = 'neuropipe/suny10lpe'
     elif len(args) == 2:
         n_virtuosos_gui = int(args[0])
         n_virtuosos_hidden = int(args[1])
@@ -22,14 +22,14 @@ def main(args):
     netid = os.getenv('USER')
 
     n_virtuosos = n_virtuosos_gui + n_virtuosos_hidden
-    if n_virtuosos < 1 or n_virtuosos > 10:
-        print('limit number of instance between 1 and 10')
+    if n_virtuosos < 1 or n_virtuosos > 15:
+        print('limit number of instance between 1 and 15')
         return
 
     
     subprocess.run(['mkdir', 'skill_launch_files', '-p'])
     sb_path = subprocess.run(['skillbridge', 'path'], capture_output=True)
-    sb_path = re.findall('.*load\((.*)\).*', str(sb_path.stdout))[0]
+    sb_path = re.findall(r'.*load\((.*)\).*', str(sb_path.stdout))[0]
 
     print(f'Using {sb_path} as skillbridge path\n')
     
@@ -43,12 +43,13 @@ def main(args):
             f.write(f'pyStartServer ?id "{netid}_{tid}" ?python "LD_LIBRARY_PATH= {python_path}"\n')
             f.write('load("~/cadence/Virtuosopy/launch_scripts/CCSinvokeCdfCallbacks.il")\n')
 
-        if n_virtuosos_gui > 0:
-            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/{project_dir}; source toolsenv; virtuoso -restore {skill_filename}"', shell=True)
-            n_virtuosos_gui -= 1
-        elif n_virtuosos_hidden > 0:
-            subprocess.run(f'gnome-terminal -- bash -c "cd ~/cadence/{project_dir}; source toolsenv; virtuoso -restore -nograph {skill_filename}"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        if n_virtuosos_hidden > 0:
+            subprocess.run([f'cd ~/cadence/{project_dir}; source ./toolsenv; virtuoso -nograph -restore {skill_filename} &'], shell='/bin/bash', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             n_virtuosos_hidden -= 1
+        elif n_virtuosos_gui > 0:
+            subprocess.run([f'cd ~/cadence/{project_dir}; source ./toolsenv; virtuoso -restore {skill_filename} &'], shell='/bin/bash')
+            n_virtuosos_gui -= 1
 
         print(f'launched virtuoso with skillbridge with a workspace id: {netid}_{tid}')
 
