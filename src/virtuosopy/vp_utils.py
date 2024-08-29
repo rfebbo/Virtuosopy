@@ -102,7 +102,7 @@ def create_wave(voltages, period, rise_time = 200e-12):
 
     return get_tv_pairs(v_cycle, rise_time)
 
-# applies a list of (time, voltage) pairs to a vpwl voltage source instance
+# given a list of (time, voltage) pairs, returns a string for a pwl stimuli
 # vcycle = [(0., 3.3), (1*period, 1.5), (2*period, 3.3)]
 def get_tv_pairs(v_cycle, rise_time = 200e-12):
     

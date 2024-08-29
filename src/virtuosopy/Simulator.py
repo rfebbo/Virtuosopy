@@ -109,17 +109,22 @@ class Simulator:
 
         with open(stim_filename, 'w') as f:
             for name, s in stims.items():
-                
-                if s['type'] == 'bit':
+                if 'function' not in s:
+                    s['function'] = 'bit'
+
+                if 'type' not in s:
+                    s['type'] = 'v'
+
+                if s['function'] == 'bit':
                     for d in self.bit_stim_defaults.keys():
                         if d not in s:
                             s[d] = self.bit_stim_defaults[d]
                     
-                    f.write(f"""_v{name} ({name} 0) vsource data="{s['data']}" rptstart=1 rpttimes=0 val1={s['val1']} val0={s['val0']} rise={s['rise']} fall={s['fall']} period={s['period']} type=bit\n""")
-                elif s['type'] == 'pwl':
-                    f.write(f"""_v{name} ({name} 0) vsource wave=\\[ {s['wave']} \\] type=pwl\n""")
-                elif s['type'] == 'dc':
-                    f.write(f"""_v{name} ({name} 0) vsource dc={s['voltage']} type=dc\n""")
+                    f.write(f"""_{s['type']}{name} ({name} 0) vsource data="{s['data']}" rptstart=1 rpttimes=0 val1={s['val1']} val0={s['val0']} rise={s['rise']} fall={s['fall']} period={s['period']} type=bit\n""")
+                elif s['function'] == 'pwl':
+                    f.write(f"""_{s['type']}{name} ({name} 0) vsource wave=\\[ {s['wave']} \\] type=pwl\n""")
+                elif s['function'] == 'dc':
+                    f.write(f"""_{s['type']}{name} ({name} 0) vsource dc={s['voltage']} type=dc\n""")
                 else:
                     print(f"Unknown stim type '{s['type']}'. Please use one of: \n\t{stim_types}")
 
@@ -211,6 +216,7 @@ class Simulator:
                     
                     wave_y_data.append(self.waves[p]['y'][x_i])
             
+                wave_y_data.append(self.x[x_i])
                 y = self.waves[cw]['fn'](wave_y_data)
                 self.waves[cw]['y'].append(y)
 

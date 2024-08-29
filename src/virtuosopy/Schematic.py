@@ -10,9 +10,13 @@ class Schematic:
 
         if ws_name == "default":
             net_id = os.getenv('USER')
+            print(net_id)
             ws = Workspace.open(workspace_id=f'{net_id}_0')
+
         else:
             ws = Workspace.open(workspace_id=ws_name)
+
+        
         self.ws = ws
 
         if overwrite:
@@ -56,13 +60,15 @@ class Schematic:
         if isinstance(pos, ConnPos):
             inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos.pos1, name, rot)
             self.create_wire([pos.external_pin, inst.pins[pos.internal_pin]], label=pos.net_name, label_offset=pos.label_offset)
-        elif isinstance(pos, list) and len(pos) == 2:
-            inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos, name, rot)
+        elif isinstance(pos, list) or isinstance(pos, np.ndarray):
+            if len(pos) == 2:
+                inst = _Inst(self.ws, self.cv, lib_name, cell_name, pos, name, rot)
         else:
             print('Pos parameter must be:')
             print('\tan xy coordinate represented by an array of length 2')
             print('\ta ConnPos')
             print("\t (eg. [0., 0.] or ConnPos(nmos.pins.D, 'MINUS', 'above') )")
+            print(f"\t {pos}")
             return inst
 
         self.instances[name] = inst
@@ -227,3 +233,6 @@ class Schematic:
         self.ws.sch.check(self.cv)
         self.ws.db.save(self.cv)
         return rv
+
+    def close(self):
+        self.ws.close()

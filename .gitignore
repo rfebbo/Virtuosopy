@@ -3,3 +3,4 @@ launch_scripts/skill_launch_files
 *.pyc
 src/Virtuosopy.egg-info
 .vscode
+**/projects

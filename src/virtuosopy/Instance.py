@@ -70,7 +70,10 @@ class _Pins:
             setattr(self, x["name"], p)
 
     def __getitem__(self, key):
-        return getattr(self, key)
+        try:
+            return getattr(self, key)
+        except:
+            raise(Exception(f"Error: pin '{key}' does not exist. Available pins: {self.names}"))
 
     def __iter__(self):
         return internal_iter(self, self.names)
@@ -106,7 +109,7 @@ class _Inst:
         self.name = name
 
         inst_cv = ws.db.open_cell_view(lib_name, cell_name, "symbol")
-        inst = ws.sch.create_inst(cv, inst_cv, name, list(self.vpos), rot)
+        inst = ws.sch.create_inst(self.cv, inst_cv, name, list(self.vpos), rot)
         # inst = ws.sch.create_inst("analogLib", "nfet", "D0", [0., 0.], "R0")
 
 

@@ -51,16 +51,16 @@ s.tran('60n')
 stims = {}
 
 # Piecewise linear voltage stimulus 
-stims['D'] = {'type' : 'pwl', 'wave' : vp.create_wave([0.0, 3.3], 20e-9, 200e-12)}
+stims['D'] = {'function' : 'pwl', 'wave' : vp.create_wave([0.0, 3.3], 20e-9, 200e-12)}
 
 # bit stimulus
 # for multiple bit stimuli using the same parameters use this variable to set the defaults
 s.bit_stim_defaults = {'val0' : 0, 'val1' : 3.3, 'period' : 2e-8, 'rise' : 1e-9, 'fall' : 1e-9}
 # to change anything just add the key and value to the stimuli
-stims['G'] = {'type' : 'bit', 'data' : '11000'}
+stims['G'] = {'function' : 'bit', 'data' : '11000'}
 
 # DC stimulus
-stims['S'] = {'type' : 'dc', 'voltage' : 0.0}
+stims['S'] = {'function' : 'dc', 'voltage' : 0.0}
 
 # apply the stims
 s.apply_stims(stims)

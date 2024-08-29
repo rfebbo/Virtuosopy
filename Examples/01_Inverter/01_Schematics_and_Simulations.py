@@ -54,11 +54,11 @@ s.tran('20n')
 stims = {}
 
 # Piecewise linear voltage stimulus 
-stims['In'] = {'type' : 'pwl', 'wave' : vp.create_wave([0.0, 1.2], 10e-9, 1e-9)}
+stims['In'] = {'function' : 'pwl', 'wave' : vp.create_wave([0.0, 1.2], 10e-9, 1e-9)}
 
 # DC stimulus
-stims['vdd!'] = {'type' : 'dc', 'voltage' : 1.2}
-stims['gnd!'] = {'type' : 'dc', 'voltage' : 0.0}
+stims['vdd!'] = {'function' : 'dc', 'voltage' : 1.2}
+stims['gnd!'] = {'function' : 'dc', 'voltage' : 0.0}
 
 # apply the stims
 s.apply_stims(stims)
