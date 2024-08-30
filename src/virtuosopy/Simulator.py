@@ -115,6 +115,9 @@ class Simulator:
                 if 'type' not in s:
                     s['type'] = 'v'
 
+                if 'current' in s:
+                    s['voltage'] = s['current']
+
                 if s['function'] == 'bit':
                     for d in self.bit_stim_defaults.keys():
                         if d not in s:
