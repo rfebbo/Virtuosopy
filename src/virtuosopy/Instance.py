@@ -9,12 +9,18 @@ class _Params:
     def __init__(self, inst):
         self.ws = inst.ws
         self.names = []
-        params = inst.ws.cdf.get_inst_CDF(inst.inst).parameters
-        if params is not None:
-            for x in params:
-                param_name = x.name.replace("?", "")
-                self.names.append(param_name)
-                setattr(self, param_name, x)
+        inst_cdf = inst.ws.cdf.get_inst_CDF(inst.inst)
+        if inst_cdf is not None:
+            params = inst_cdf.parameters
+            if params is not None:
+                for x in params:
+                    param_name = x.name.replace("?", "")
+                    self.names.append(param_name)
+                    setattr(self, param_name, x)
+            else:
+                print(f"Warning: unable to get params for instance '{inst.name}'")
+        else:
+            print(f"Warning: unable to get inst CDF for '{inst.name}'")
 
     def __setitem__(self, key, value):
         getattr(self, key).value = value
@@ -160,6 +166,6 @@ class _Inst:
             repr += "\t"
             repr += p
             repr += " = "
-            repr += self.applied_params[p]
+            repr += str(self.applied_params[p])
             repr += "\n"
         return repr
