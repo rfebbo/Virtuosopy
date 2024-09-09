@@ -252,6 +252,7 @@ class Simulator:
                 self.waves[name]['signal_type'] = w.leaf_signal_type_name
                 if self.waves[name]['signal_type'] == 'V' and self.waves[name]['type'] != 'Voltage':
                     print(f"Net '{name}' was expected to be a current, but a voltage was returned instead. To track a current use track_pin() on a pin attached to an instance/symbol. \n\tnmos = sch.create_instance('analogLib', 'nmos4', [0.,0.], 'nmos')\n\ts.track_pin(nmos.pins.D)")
+                    self.waves[name]['type'] = 'Voltage'
 
             else:
                 # we were not able to get any waves, simulation likely failed
