@@ -30,7 +30,7 @@ class Simulator:
     def __init__(self, sch, model_files = None, view='schematic', show_netlist = False, verbose=True):
         self.sch = sch
         self.verbose = verbose
-
+        self.temp = 27
 
         # set simulator
         self.sch.ws['simulator'](Symbol('spectre'))
@@ -89,6 +89,9 @@ class Simulator:
         else:
             raise Exception(f'Invalid errpreset: {self.errpreset}')
 
+    def set_temp(self, temp):
+        self.temp = temp
+        self.sch.ws['option'](Symbol('temp'), f'{temp}')
 
 
 # stimulus file example:
@@ -105,7 +108,7 @@ class Simulator:
     def apply_stims(self, stims):
         stim_filename = os.getcwd() + f'/sim_output/{self.sch.cell_name}/graphical_stimuli.scs'
 
-        stim_types = ['bit', 'pwl', 'dc']
+        stim_functions = ['bit', 'pwl', 'dc']
 
         with open(stim_filename, 'w') as f:
             for name, s in stims.items():
@@ -114,6 +117,8 @@ class Simulator:
 
                 if 'type' not in s:
                     s['type'] = 'v'
+                elif s['type'] not in ['i', 'v']:
+                    raise(Exception(f"stimulus 'type' must be 'i' or 'v', found {s['type']}"))
 
                 if 'current' in s:
                     s['voltage'] = s['current']
@@ -123,13 +128,13 @@ class Simulator:
                         if d not in s:
                             s[d] = self.bit_stim_defaults[d]
                     
-                    f.write(f"""_{s['type']}{name} ({name} 0) vsource data="{s['data']}" rptstart=1 rpttimes=0 val1={s['val1']} val0={s['val0']} rise={s['rise']} fall={s['fall']} period={s['period']} type=bit\n""")
+                    f.write(f"""_{s['type']}{name} ({name} 0) {s['type']}source data="{s['data']}" rptstart=1 rpttimes=0 val1={s['val1']} val0={s['val0']} rise={s['rise']} fall={s['fall']} period={s['period']} type=bit\n""")
                 elif s['function'] == 'pwl':
-                    f.write(f"""_{s['type']}{name} ({name} 0) vsource wave=\\[ {s['wave']} \\] type=pwl\n""")
+                    f.write(f"""_{s['type']}{name} ({name} 0) {s['type']}source wave=\\[ {s['wave']} \\] type=pwl\n""")
                 elif s['function'] == 'dc':
-                    f.write(f"""_{s['type']}{name} ({name} 0) vsource dc={s['voltage']} type=dc\n""")
+                    f.write(f"""_{s['type']}{name} ({name} 0) {s['type']}source dc={s['voltage']} type=dc\n""")
                 else:
-                    print(f"Unknown stim type '{s['type']}'. Please use one of: \n\t{stim_types}")
+                    print(f"Unknown stim function '{s['function']}'. Please use one of: \n\t{stim_functions}")
 
         self.sch.ws['stimulusFile'](stim_filename)
 
@@ -245,7 +250,11 @@ class Simulator:
                 waveforms.append(w)
                 extracted_names.append(name)
                 self.waves[name]['signal_type'] = w.leaf_signal_type_name
+                if self.waves[name]['signal_type'] == 'V' and self.waves[name]['type'] != 'Voltage':
+                    print(f"Net '{name}' was expected to be a current, but a voltage was returned instead. To track a current use track_pin() on a pin attached to an instance/symbol. \n\tnmos = sch.create_instance('analogLib', 'nmos4', [0.,0.], 'nmos')\n\ts.track_pin(nmos.pins.D)")
+
             else:
+                # we were not able to get any waves, simulation likely failed
                 self.run_ok = False
                 if self.verbose:
                     print(f'Error: Unable to extract {name}. Does it exist? Check that it is saved or try track_net')
@@ -393,7 +402,7 @@ class Simulator:
             # store the parameter sets
             self.param_sets = p_values
 
-            self.sch.ws['temp'](27)
+            self.sch.ws['temp'](self.temp)
 
             # set the default value of each parameter
             for param in self.param_sets:
@@ -404,7 +413,7 @@ class Simulator:
             self.sch.ws['paramRun']()
         else:
             # set temp and run
-            self.sch.ws['temp'](27)
+            self.sch.ws['temp'](self.temp)
             self.sch.ws['run']()
 
         try:  # skillbridge cannot parse stdobj@0xhexnumber type data. But I don't need any parsing of that data so keeping it in try to prevent error
@@ -423,7 +432,15 @@ class Simulator:
 
         self.extract_waves()
 
+
         if self.run_ok == False:
+            print('Simulation Failed. see ' + f'"./sim_output/{self.sch.cell_name}/psf/spectre.out" for details.' )
+            print('From spectre.out :\n')
+            with open(f'./sim_output/{self.sch.cell_name}/psf/spectre.out', 'r') as f:
+                for l in f:
+                    if 'error' in l.lower() or 'warning' in l.lower():
+                        print('\t' + l)
+        
             return None
 
         # check if the simulation ran as long as requested
@@ -492,15 +509,7 @@ class Simulator:
             # plt.autoscale()
             # plt.draw()
 
-    def plot(self, interactive=True):
-        if self.run_ok == False:
-            print('Simulation Failed. see ' + f'"./sim_output/{self.sch.cell_name}/psf/spectre.out" for details.' )
-            print('From spectre.out :\n')
-            with open(f'./sim_output/{self.sch.cell_name}/psf/spectre.out', 'r') as f:
-                for l in f:
-                    if 'error' in l.lower() or 'warning' in l.lower():
-                        print('\t' + l)
-            # return
+    def plot(self, interactive=False):
 
         self.ax_info = {}
         linestyles = ['solid', 'dashed', 'dashdot', 'dotted']
