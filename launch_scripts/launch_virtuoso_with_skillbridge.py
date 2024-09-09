@@ -22,8 +22,8 @@ def main(args):
     netid = os.getenv('USER')
 
     n_virtuosos = n_virtuosos_gui + n_virtuosos_hidden
-    if n_virtuosos < 1 or n_virtuosos > 15:
-        print('limit number of instance between 1 and 15')
+    if n_virtuosos < 1 or n_virtuosos > 10:
+        print('limit number of instance between 1 and 10')
         return
 
     
