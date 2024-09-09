@@ -3,6 +3,7 @@ from skillbridge import Workspace
 from .vp_utils import *
 import numpy as np
 import os
+import atexit
 
 class Schematic:
     def __init__(self, lib_name, cell_name, ws_name="default", overwrite=False, verbose=True):
@@ -10,7 +11,6 @@ class Schematic:
 
         if ws_name == "default":
             net_id = os.getenv('USER')
-            print(net_id)
             ws = Workspace.open(workspace_id=f'{net_id}_0')
 
         else:
@@ -18,6 +18,8 @@ class Schematic:
 
         
         self.ws = ws
+        self.close_called = False
+        atexit.register(self.cleanup)
 
         if overwrite:
             cv = ws.db.open_cell_view_by_type(lib_name, cell_name, "schematic",
@@ -208,20 +210,25 @@ class Schematic:
                 # convert strings to floats for comparison
                 if isinstance(app_val, str):
                     app_val = convert_str_to_num(app_val)
+
+                if isinstance(calc_val, str):
                     calc_val = convert_str_to_num(calc_val)
-                
+
                 if isinstance(app_val, str):
-                    if calc_val != app_val:
-                        if self.verbose:
-                            print(f'Error: Calculated Parameter not equal to Applied Parameter for {a_p_name} on {i.name}.')
-                            print(f'{i.params[a_p_name].value} != {a_p_value}')
-                        return 1
-                
-                elif not np.isclose(calc_val, app_val):
-                    if self.verbose:
-                        print(f'Error: Calculated Parameter not equal to Applied Parameter for {a_p_name} on {i.name}.')
-                        print(f'{i.params[a_p_name].value} != {a_p_value}')
-                    return 1
+                    try:
+                        if calc_val != app_val:
+                            if self.verbose:
+                                print(f'Error: Calculated Parameter not equal to Applied Parameter for {a_p_name} on {i.name}.')
+                                print(f'{i.params[a_p_name].value} != {a_p_value}')
+                            return 1
+                    
+                        elif not np.isclose(calc_val, app_val):
+                            if self.verbose:
+                                print(f'Error: Calculated Parameter not equal to Applied Parameter for {a_p_name} on {i.name}.')
+                                print(f'{i.params[a_p_name].value} != {a_p_value}')
+                            return 1
+                    except:
+                        print(f'Could not convert {calc_val} or {app_val} to float')
         
         return 0
 
@@ -233,6 +240,13 @@ class Schematic:
         self.ws.sch.check(self.cv)
         self.ws.db.save(self.cv)
         return rv
+    
+    def cleanup(self):
+        if self.close_called == False:
+            self.close()
 
     def close(self):
+        self.close_called = True
+        self.ws.db.purge(self.cv)
         self.ws.close()
+        
