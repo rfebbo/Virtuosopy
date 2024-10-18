@@ -18,9 +18,9 @@ class _Params:
                     self.names.append(param_name)
                     setattr(self, param_name, x)
             else:
-                print(f"Warning: unable to get params for instance '{inst.name}'")
+                print(f"Instance.py Warning: unable to get params for instance '{inst.name}'")
         else:
-            print(f"Warning: unable to get inst CDF for '{inst.name}'")
+            print(f"Instance.py Warning: unable to get inst CDF for '{inst.name}'")
 
     def __setitem__(self, key, value):
         getattr(self, key).value = value
