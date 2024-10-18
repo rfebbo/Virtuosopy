@@ -245,8 +245,9 @@ class Schematic:
         if self.close_called == False:
             self.close()
 
-    def close(self):
+    def close(self, purge=False):
         self.close_called = True
-        self.ws.db.purge(self.cv)
+        if purge:
+            self.ws.db.purge(self.cv)
         self.ws.close()
         
