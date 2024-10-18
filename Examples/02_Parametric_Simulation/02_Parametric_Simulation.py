@@ -85,6 +85,4 @@ print('Running Simulation...')
 s.run(plot_in_v=False, p_values=p_values)
 
 print('Plotting...')
-s.plot(interactive=False)
-
-
+s.plot(save='./images/sim_waves.png')

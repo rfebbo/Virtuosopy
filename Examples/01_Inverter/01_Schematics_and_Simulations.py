@@ -41,7 +41,6 @@ if sch.save():
 else:
     print('Save successful')
 
-# %%
 # Setup Simulator
 print('Setting up Simulation...')
 model_files = ['../../model/FinFET/14nfet.pm', '../../model/FinFET/14pfet.pm']
@@ -70,25 +69,19 @@ s.track_pin(nmos.pins.D, group='current')
 
 s.run(plot_in_v=False)
 
-s.plot(interactive=False)
+s.plot(save='./images/sim_waves.png')
 
-
-# %%
-# create a VTC
-
-x = s.waves['/In']['y'][0]
-y = s.waves['/Out']['y'][0]
+# create a voltage transfer curve
+x = s.waves['/In']['y']
+y = s.waves['/Out']['y']
 
 fig, ax = plt.subplots(1,1,figsize=(5,4), dpi=200)
 plt.xlabel('Input (V)')
 plt.ylabel('Output (V)')
 plt.plot(x,y)
 plt.tight_layout()
+plt.savefig('./images/VTC.png')
 plt.show()
-
-
-
-# %%
 
 
 
