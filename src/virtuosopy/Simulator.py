@@ -50,6 +50,15 @@ class Simulator:
         # analysis order in case of multiple analysis
         self.sch.ws['envOption'](Symbol('analysisOrder'), ['tran'])
 
+        # performance options
+        self.sch.ws['option'](Symbol('nthreads'), '25',\
+                              Symbol('multithread'), 'on')
+
+        self.sch.ws['option']('?categ', Symbol('turboOpts'),\
+                            Symbol('numThreads'), '25',\
+                            Symbol('mtOption'), 'Manual',\
+                            Symbol('apsplus'), 't')
+
         # the time values for each simulation
         self.x = []
 
@@ -88,6 +97,8 @@ class Simulator:
             self.sch.ws['analysis'](Symbol('tran'), '?start', '0', '?stop', duration, '?errpreset', self.errpreset)
         else:
             raise Exception(f'Invalid errpreset: {self.errpreset}')
+        
+        self.sch.ws['saveOption'](Symbol('pwr'), 'all')
 
     def set_temp(self, temp):
         self.temp = temp
@@ -136,6 +147,8 @@ class Simulator:
                 else:
                     print(f"Unknown stim function '{s['function']}'. Please use one of: \n\t{stim_functions}")
 
+        # self.sch.ws['hlcheck']('0') #not sure what this does. works without
+        
         self.sch.ws['stimulusFile'](stim_filename)
 
     def save_pin(self, pin, signal_type):
@@ -300,7 +313,7 @@ class Simulator:
             for i in range(self.sch.ws.dr.vector_length(y_wave)):
                 y_vec.append(self.sch.ws.dr.get_elem(y_wave, i))
 
-            vectors.append([np.asarray(y_vec)])
+            vectors.append(np.asarray(y_vec))
 
         # x vector is same for all these y vector
         x_wave = self.sch.ws.dr.get_waveform_x_vec(waveforms[0])
@@ -308,7 +321,7 @@ class Simulator:
         for i in range(self.sch.ws.dr.vector_length(x_wave)):
             x_vec.append(self.sch.ws.dr.get_elem(x_wave, i))
         
-        return vectors, [np.asarray(x_vec)]
+        return vectors, np.asarray(x_vec)
 
 
     def unpack_nested_waveform(self, waveform):
@@ -445,14 +458,24 @@ class Simulator:
             return None
 
         # check if the simulation ran as long as requested
-        for x in self.x:
-            if not np.isclose(self.duration,x[-1]):
-                self.run_ok = False
-                if self.verbose:
-                    print(f"convergence error {x[-1]} != {self.duration}")
+        sim_dur = 0
+        if self.param_sets == None:
+            if self.check_sim_dur(self.x[-1]) == 1:
                 return None
-        
+        else:
+            for x in self.x:
+                if self.check_sim_dur(x[-1]) == 1:
+                    return None
+
         self.calc_custom()
+        return 0
+
+    def check_sim_dur(self, sim_dur):
+        if not np.isclose(self.duration, sim_dur):
+            self.run_ok = False
+            if self.verbose:
+                print(f"convergence error {sim_dur} != {self.duration}")
+            return 1
         return 0
 
     # for the checkboxes in the interactive plot
@@ -510,7 +533,7 @@ class Simulator:
             # plt.autoscale()
             # plt.draw()
 
-    def plot(self, interactive=False):
+    def plot(self, interactive=False, save=None):
 
         self.ax_info = {}
         linestyles = ['solid', 'dashed', 'dashdot', 'dotted']
@@ -521,16 +544,23 @@ class Simulator:
         if interactive:
             plt.ion()
 
-        self.fig, _ = plt.subplots(len(self.cust_data_types), figsize=(8, 3*len(self.cust_data_types)), sharex=True)
+        self.fig, _ = plt.subplots(len(self.cust_data_types) + len(self.groups), figsize=(8, 3*len(self.cust_data_types)), sharex=True)
 
         ax = self.fig.axes
 
+        plot_x = self.x
+        if self.param_sets == None:
+            plot_x = [plot_x]
+        
+
         # y labels for voltage, current, and custom
         y_labels = self.cust_data_types
+        ax_labels = y_labels
+        ax_labels += self.groups
         # pair each y label with an axis
         ax_dict = {}
         legend_elements = {}
-        for l, ax_i in zip(y_labels, ax):
+        for l, ax_i in zip(ax_labels, ax):
             ax_dict[l] = ax_i
             legend_elements[l] = []
             self.ax_info[l] = {'count' : 0, 'scale_factor' : 1}
@@ -541,14 +571,20 @@ class Simulator:
 
             y_label = self.waves[name]['type']
             self.ax_info[y_label]['count'] += 1
-            cur_ax = ax_dict[y_label]
+            if 'group' in self.waves[name]:
+                cur_ax = ax_dict[self.waves[name]['group']]
+            else:
+                cur_ax = ax_dict[y_label]
+            plot_y = self.waves[name]['y']
+            if self.param_sets == None:
+                plot_y = [plot_y]
             pls = []
-            for (i,x), y in zip(enumerate(self.x), self.waves[name]['y']):
+            for (i,x), y in zip(enumerate(plot_x), plot_y):
                 pls.append(cur_ax.plot(x * 1e9, y, label=name, linestyle=linestyles[i], color=colors[self.ax_info[y_label]['count']-1])[0])
                 if i == 0:
                     legend_elements[y_label].append(Line2D([0], [0], color=colors[self.ax_info[y_label]['count']-1], label=name))
 
-            cur_ax.set_ylabel(y_label)
+            cur_ax.set_ylabel(self.waves[name]['type'])
             self.waves[name]['ax'] = cur_ax
             self.waves[name]['pl'] = pls
         
@@ -591,5 +627,9 @@ class Simulator:
             display(h)
 
         plt.tight_layout()
+
+        if isinstance(save, str):
+            plt.savefig(save)
+            
         plt.show()
 
